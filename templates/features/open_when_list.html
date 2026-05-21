@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Open When — Together{% endblock %}
+{% block nav_openwhen %}active{% endblock %}
+{% block page_title %}Open When 💌{% endblock %}
+{% block content %}
+{% load static %}
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;" class="fade-in">
+
+  <!-- Received -->
+  <div>
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.3rem;margin-bottom:16px;">💌 For You</h3>
+    {% if received %}
+    <div style="display:grid;gap:14px;">
+      {% for msg in received %}
+      <a href="{% url 'open_when_read' msg.pk %}" style="text-decoration:none;" class="glass-card" style="padding:24px;display:block;cursor:pointer;">
+        <div style="padding:24px;">
+          <div style="font-size:2rem;margin-bottom:10px;">{% if msg.is_opened %}💌{% else %}📩{% endif %}</div>
+          <div style="font-weight:600;color:var(--ink);margin-bottom:4px;">Open when {{ msg.occasion }}</div>
+          <div style="font-size:0.78rem;color:var(--ink-soft);">
+            from {{ msg.created_by.first_name|default:msg.created_by.username }} •
+            {% if msg.is_opened %}Opened {{ msg.opened_at|date:"M j" }}{% else %}<span style="color:var(--rose);">Not opened yet</span>{% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass-card" style="padding:40px;text-align:center;">
+      <div style="font-size:3rem;margin-bottom:12px;">📭</div>
+      <p style="color:var(--ink-soft);font-size:0.9rem;">No messages yet from your partner</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Created -->
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="font-family:'DM Serif Display',serif;font-size:1.3rem;">✍️ Written by You</h3>
+      <a href="{% url 'open_when_create' %}" class="btn-primary-custom" style="font-size:0.82rem;padding:8px 18px;">+ Write Message</a>
+    </div>
+    {% if created %}
+    <div style="display:grid;gap:14px;">
+      {% for msg in created %}
+      <div class="glass-card" style="padding:24px;">
+        <div style="font-size:1.5rem;margin-bottom:8px;">💌</div>
+        <div style="font-weight:600;color:var(--ink);margin-bottom:4px;">Open when {{ msg.occasion }}</div>
+        <div style="font-size:0.78rem;color:var(--ink-soft);">
+          for {{ msg.for_partner.first_name|default:msg.for_partner.username }} •
+          {% if msg.is_opened %}<span style="color:var(--teal);">Opened ✓</span>{% else %}Waiting{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass-card" style="padding:40px;text-align:center;">
+      <div style="font-size:3rem;margin-bottom:12px;">✍️</div>
+      <p style="color:var(--ink-soft);font-size:0.9rem;margin-bottom:16px;">Write your first Open When message</p>
+      <a href="{% url 'open_when_create' %}" class="btn-soft">Write Now 💌</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

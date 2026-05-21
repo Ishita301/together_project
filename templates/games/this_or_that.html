@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}This or That — Together{% endblock %}
+{% block nav_tot %}active{% endblock %}
+{% block page_title %}This or That 🎯{% endblock %}
+{% block content %}
+{% load static %}
+
+<div style="max-width:600px;margin:0 auto;" class="fade-in">
+
+  <!-- Match Score -->
+  <div class="glass-card" style="padding:24px;margin-bottom:24px;text-align:center;">
+    <p style="color:var(--ink-soft);font-size:0.82rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Compatibility Score</p>
+    <div style="font-family:'DM Serif Display',serif;font-size:3rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">{{ match_pct }}%</div>
+    <div class="match-bar" style="margin:12px auto;max-width:300px;">
+      <div class="match-fill" style="width:{{ match_pct }}%;"></div>
+    </div>
+    <p style="color:var(--ink-soft);font-size:0.875rem;">Based on {{ total_compared }} answer{{ total_compared|pluralize }} compared with your partner</p>
+  </div>
+
+  <!-- Question Card -->
+  {% if question %}
+  <div class="glass-card" style="padding:40px;text-align:center;" id="questionCard">
+    <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--rose);font-weight:600;margin-bottom:16px;">Choose one ✨</div>
+    <h2 style="font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:8px;color:var(--ink);">{{ question.question }}</h2>
+    <p style="color:var(--ink-soft);font-size:0.875rem;margin-bottom:32px;">What would you pick?</p>
+
+    <div class="this-or-that-options" id="options">
+      <button class="option-btn" id="btnA" onclick="answer('A', this)">
+        <span class="option-emoji">{{ question.emoji_a }}</span>
+        <span>{{ question.option_a }}</span>
+      </button>
+      <button class="option-btn" id="btnB" onclick="answer('B', this)">
+        <span class="option-emoji">{{ question.emoji_b }}</span>
+        <span>{{ question.option_b }}</span>
+      </button>
+    </div>
+
+    {% if partner_answer %}
+    <div style="margin-top:20px;padding:14px;background:var(--rose-pale);border-radius:var(--radius-sm);font-size:0.875rem;">
+      💕 Your partner picked: <strong>{{ partner_answer.get_answer_display }} — {{ question.option_a|add:""|default:question.option_b }}</strong>
+    </div>
+    {% endif %}
+
+    <!-- Result reveal -->
+    <div id="resultReveal" style="display:none;margin-top:20px;animation:fadeIn 0.4s ease;">
+      <div id="resultText" style="font-size:1.1rem;font-weight:600;color:var(--ink);"></div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:20px;">
+    <a href="{% url 'this_or_that' %}" class="btn-soft">⏭ Next Question</a>
+  </div>
+
+  {% else %}
+  <div class="glass-card" style="padding:60px;text-align:center;">
+    <div style="font-size:4rem;margin-bottom:16px;">🎉</div>
+    <h2 style="font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:8px;">All caught up!</h2>
+    <p style="color:var(--ink-soft);">You've answered all available questions. Check back soon for more!</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+async function answer(choice, btn) {
+  const buttons = document.querySelectorAll('.option-btn');
+  buttons.forEach(b => b.disabled = true);
+
+  btn.style.borderColor = 'var(--rose)';
+  btn.style.background = 'var(--rose-pale)';
+
+  const res = await fetch('/games/this-or-that/answer/', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': getCookie('csrftoken')},
+    body: `question_id={{ question.id }}&answer=${choice}`
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    const reveal = document.getElementById('resultReveal');
+    const txt = document.getElementById('resultText');
+    {% if partner_answer %}
+    const partnerChoice = '{{ partner_answer.answer }}';
+    if (choice === partnerChoice) {
+      txt.innerHTML = '💕 You both agree! Great minds think alike!';
+      txt.style.color = 'var(--rose)';
+    } else {
+      txt.innerHTML = '🤔 You have different opinions — that\'s what makes you interesting!';
+      txt.style.color = 'var(--ink-soft)';
+    }
+    {% else %}
+    txt.innerHTML = '✅ Answer saved! Waiting for your partner to answer...';
+    txt.style.color = 'var(--teal)';
+    {% endif %}
+    reveal.style.display = 'block';
+  }
+}
+
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : null;
+}
+</script>
+{% endblock %}

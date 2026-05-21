@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Connect Partner — Together{% endblock %}
+{% block page_title %}Connect Partner{% endblock %}
+{% block content %}
+{% load static %}
+
+<div style="max-width:600px;margin:0 auto;" class="fade-in">
+
+  <div class="glass-card" style="padding:40px;text-align:center;margin-bottom:24px;">
+    <div style="font-size:4rem;margin-bottom:16px;">💕</div>
+    <h2 style="font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:8px;">Connect with Your Partner</h2>
+    <p style="color:var(--ink-soft);margin-bottom:32px;line-height:1.7;">
+      Share your invite code with your partner, or enter their code below to start your Together journey.
+    </p>
+
+    <!-- Your Code -->
+    <div style="background:var(--gradient);padding:24px;border-radius:16px;margin-bottom:32px;">
+      <p style="color:rgba(255,255,255,0.8);font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Your Invite Code</p>
+      <div id="myCode" style="font-family:monospace;font-size:1rem;color:white;font-weight:700;letter-spacing:0.05em;cursor:pointer;" onclick="copyCode()">
+        {{ invite_code }}
+      </div>
+      <button onclick="copyCode()" style="margin-top:12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:white;padding:8px 20px;border-radius:50px;cursor:pointer;font-size:0.82rem;font-weight:600;transition:all 0.2s;" id="copyBtn">
+        📋 Copy Code
+      </button>
+    </div>
+
+    <!-- Enter Partner Code -->
+    <div style="text-align:left;">
+      <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:16px;text-align:center;">Enter Partner's Code</h3>
+      {% if messages %}
+        {% for message in messages %}
+        <div class="alert-together {% if message.tags == 'error' %}alert-error-custom{% else %}alert-success-custom{% endif %}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+      <form method="post" action="{% url 'connect_partner' %}">
+        {% csrf_token %}
+        <label class="form-label-custom">Partner's Invite Code</label>
+        <input type="text" name="invite_code" class="form-control-custom" placeholder="Paste your partner's code here" required style="text-align:center;font-family:monospace;font-size:0.9rem;">
+        <button type="submit" class="btn-primary-custom" style="width:100%;justify-content:center;padding:14px;margin-top:8px;">
+          💑 Connect with Partner
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="glass-card" style="padding:24px;text-align:center;">
+    <p style="color:var(--ink-soft);font-size:0.875rem;">
+      💡 <strong>How to connect:</strong> Both of you need to create accounts. Then one person shares their code and the other enters it here.
+    </p>
+  </div>
+</div>
+
+<script>
+function copyCode() {
+  const code = document.getElementById('myCode').textContent.trim();
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy Code', 2000);
+  });
+}
+</script>
+{% endblock %}

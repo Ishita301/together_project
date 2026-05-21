@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% block title %}Chat with {{ partner.first_name|default:partner.username }} — Together{% endblock %}
+{% block nav_chat %}active{% endblock %}
+{% block page_title %}{% endblock %}
+
+{% block extra_head %}
+<style>
+.main-content { display: flex; flex-direction: column; }
+.content-area { padding: 0; flex: 1; display: flex; flex-direction: column; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<div class="chat-wrapper">
+  <!-- Chat Header -->
+  <div style="padding:16px 24px;background:var(--card-bg);border-bottom:1px solid var(--card-border);display:flex;align-items:center;gap:16px;backdrop-filter:blur(20px);">
+    <img src="{{ partner.get_avatar_url }}" alt="{{ partner.username }}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--rose-light);">
+    <div>
+      <div style="font-weight:600;font-size:1rem;color:var(--ink);">{{ partner.first_name|default:partner.username }}</div>
+      <div style="font-size:0.78rem;color:var(--ink-soft);" id="partnerStatus">
+        <span id="onlineIndicator" style="display:inline-block;width:7px;height:7px;background:#22C55E;border-radius:50%;margin-right:4px;"></span>
+        Active now
+      </div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;">
+      <button style="background:var(--rose-pale);border:none;padding:8px 16px;border-radius:50px;cursor:pointer;color:var(--rose);font-size:0.82rem;font-weight:600;" onclick="document.getElementById('imageInput').click()">📷 Photo</button>
+      <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="sendImage(this)">
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages" id="chatMessages">
+    {% for msg in messages %}
+    <div class="{% if msg.sender == request.user %}message-sent-wrapper{% else %}message-received-wrapper{% endif %}" style="display:flex;flex-direction:column;{% if msg.sender == request.user %}align-items:flex-end{% else %}align-items:flex-start{% endif %}">
+      {% if msg.image %}
+      <div class="message-bubble {% if msg.sender == request.user %}message-sent{% else %}message-received{% endif %}" style="padding:8px;">
+        <img src="{{ msg.image.url }}" alt="image" style="max-width:240px;border-radius:12px;cursor:pointer;" onclick="openImage('{{ msg.image.url }}')">
+        <div class="message-time" style="{% if msg.sender == request.user %}color:rgba(255,255,255,0.7){% endif %}">{{ msg.created_at|date:"g:i A" }} {% if msg.sender == request.user and msg.is_seen %}✓✓{% elif msg.sender == request.user %}✓{% endif %}</div>
+      </div>
+      {% elif msg.content %}
+      <div class="message-bubble {% if msg.sender == request.user %}message-sent{% else %}message-received{% endif %}">
+        {{ msg.content }}
+        <div class="message-time" style="{% if msg.sender == request.user %}color:rgba(255,255,255,0.7){% endif %}">{{ msg.created_at|date:"g:i A" }} {% if msg.sender == request.user and msg.is_seen %}✓✓{% elif msg.sender == request.user %}✓{% endif %}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% empty %}
+    <div style="text-align:center;padding:60px 24px;color:var(--ink-soft);">
+      <div style="font-size:4rem;margin-bottom:16px;">💬</div>
+      <p style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:8px;">Start the conversation</p>
+      <p style="font-size:0.875rem;">Say hi to {{ partner.first_name|default:partner.username }}! 💕</p>
+    </div>
+    {% endfor %}
+
+    <!-- Typing indicator -->
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  </div>
+
+  <!-- Emoji Picker (simple) -->
+  <div id="emojiPicker" style="display:none;padding:12px 24px;background:var(--card-bg);border-top:1px solid var(--card-border);flex-wrap:wrap;gap:8px;">
+    {% for emoji in "💕❤️😊😂🥰😘😍🤗😭😅🔥✨💫🌸🎉💌💝🌹🦋💖" %}
+    <button onclick="insertEmoji('{{ emoji }}')" style="background:none;border:none;font-size:1.4rem;cursor:pointer;padding:4px;border-radius:8px;transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">{{ emoji }}</button>
+    {% endfor %}
+  </div>
+
+  <!-- Input Area -->
+  <div class="chat-input-area">
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button onclick="toggleEmoji()" style="background:var(--rose-pale);border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">😊</button>
+      <input type="text" class="chat-input" id="messageInput" placeholder="Write something cute... 💕" autocomplete="off">
+      <button onclick="sendMessage()" id="sendBtn" class="btn-primary-custom" style="padding:10px 20px;flex-shrink:0;">
+        Send 💌
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;" onclick="this.style.display='none'">
+  <img id="modalImg" style="max-width:90vw;max-height:90vh;border-radius:12px;">
+</div>
+
+<script>
+const USER_ID = {{ user_id }};
+const PARTNER_NAME = "{{ partner.first_name|default:partner.username }}";
+
+// WebSocket
+const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+const ws = new WebSocket(`${wsScheme}://${window.location.host}/ws/chat/`);
+let typingTimer;
+
+ws.onopen = () => {
+  ws.send(JSON.stringify({type: 'seen'}));
+};
+
+ws.onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  if (data.type === 'message') {
+    appendMessage(data);
+    if (data.sender_id !== USER_ID) {
+      ws.send(JSON.stringify({type: 'seen'}));
+    }
+  } else if (data.type === 'typing') {
+    const indicator = document.getElementById('typingIndicator');
+    indicator.classList.toggle('show', data.is_typing);
+    scrollToBottom();
+  }
+};
+
+ws.onclose = () => {
+  document.getElementById('onlineIndicator').style.background = '#9CA3AF';
+};
+
+function appendMessage(data) {
+  const container = document.getElementById('chatMessages');
+  const isMine = data.sender_id === USER_ID;
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isMine ? 'flex-end' : 'flex-start'};`;
+  wrapper.innerHTML = `
+    <div class="message-bubble ${isMine ? 'message-sent' : 'message-received'}">
+      ${escapeHtml(data.message)}
+      <div class="message-time" style="${isMine ? 'color:rgba(255,255,255,0.7)' : ''}">${data.timestamp}${isMine ? ' ✓' : ''}</div>
+    </div>`;
+  // Remove empty state if present
+  const emptyState = container.querySelector('[style*="4rem"]');
+  if (emptyState) emptyState.parentElement?.remove() || emptyState.remove();
+  const typingEl = document.getElementById('typingIndicator');
+  container.insertBefore(wrapper, typingEl);
+  scrollToBottom();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(text));
+  return div.innerHTML;
+}
+
+function sendMessage() {
+  const input = document.getElementById('messageInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  ws.send(JSON.stringify({type: 'message', message: msg}));
+  input.value = '';
+  stopTyping();
+}
+
+function scrollToBottom() {
+  const container = document.getElementById('chatMessages');
+  container.scrollTop = container.scrollHeight;
+}
+
+document.getElementById('messageInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+document.getElementById('messageInput').addEventListener('input', () => {
+  ws.send(JSON.stringify({type: 'typing', is_typing: true}));
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(stopTyping, 1500);
+});
+
+function stopTyping() {
+  ws.send(JSON.stringify({type: 'typing', is_typing: false}));
+}
+
+function toggleEmoji() {
+  const picker = document.getElementById('emojiPicker');
+  picker.style.display = picker.style.display === 'none' ? 'flex' : 'none';
+}
+
+function insertEmoji(emoji) {
+  const input = document.getElementById('messageInput');
+  input.value += emoji;
+  input.focus();
+}
+
+function openImage(url) {
+  document.getElementById('modalImg').src = url;
+  document.getElementById('imageModal').style.display = 'flex';
+}
+
+async function sendImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+  const res = await fetch('/chat/send-image/', {method: 'POST', body: formData});
+  const data = await res.json();
+  if (data.success) {
+    // Append image message locally
+    const container = document.getElementById('chatMessages');
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;';
+    wrapper.innerHTML = `<div class="message-bubble message-sent" style="padding:8px"><img src="${data.image_url}" style="max-width:240px;border-radius:12px;cursor:pointer;" onclick="openImage('${data.image_url}')"><div class="message-time" style="color:rgba(255,255,255,0.7)">now ✓</div></div>`;
+    container.insertBefore(wrapper, document.getElementById('typingIndicator'));
+    scrollToBottom();
+  }
+}
+
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : null;
+}
+
+// Initial scroll
+scrollToBottom();
+</script>
+{% endblock %}

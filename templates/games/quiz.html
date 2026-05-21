@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Couple Quiz — Together{% endblock %}
+{% block nav_quiz %}active{% endblock %}
+{% block page_title %}Couple Quiz 🧠{% endblock %}
+{% block content %}
+{% load static %}
+
+{% if no_questions %}
+<div class="glass-card" style="padding:60px;text-align:center;max-width:500px;margin:0 auto;" class="fade-in">
+  <div style="font-size:4rem;margin-bottom:16px;">🧩</div>
+  <h2 style="font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:8px;">Quiz Coming Soon!</h2>
+  <p style="color:var(--ink-soft);">Quiz questions are being prepared. Check back soon!</p>
+</div>
+{% else %}
+<div style="max-width:650px;margin:0 auto;" class="fade-in">
+  <!-- Progress -->
+  <div style="margin-bottom:24px;">
+    <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:var(--ink-soft);margin-bottom:6px;">
+      <span id="progressText">Question 1 of {{ questions|length }}</span>
+      <span id="scoreText">Score: 0</span>
+    </div>
+    <div class="match-bar"><div class="match-fill" id="progressBar" style="width:{{ questions|length|divisibleby:questions|length|default:1 }}%;"></div></div>
+  </div>
+
+  <form method="post" action="{% url 'submit_quiz' %}" id="quizForm">
+    {% csrf_token %}
+    {% for q in questions %}
+    <div class="glass-card" style="padding:36px;display:none;" id="q_{{ forloop.counter0 }}" data-index="{{ forloop.counter0 }}">
+      <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--rose);font-weight:700;margin-bottom:12px;">Question {{ forloop.counter }}</div>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:1.4rem;margin-bottom:24px;color:var(--ink);">{{ q.question }}</h2>
+      <div style="display:grid;gap:12px;">
+        {% for opt in q.options %}
+        <label style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-radius:var(--radius-sm);border:1.5px solid var(--card-border);cursor:pointer;transition:all 0.2s;font-size:0.9rem;font-weight:500;color:var(--ink);" class="quiz-option" onmouseover="this.style.borderColor='var(--rose)';this.style.background='var(--rose-pale)'" onmouseout="resetOpt(this)">
+          <input type="radio" name="q_{{ q.id }}" value="{{ opt }}" style="accent-color:var(--rose);" required onchange="selectOption(this)">
+          {{ opt }}
+        </label>
+        {% endfor %}
+      </div>
+      <div style="margin-top:24px;display:flex;justify-content:space-between;align-items:center;">
+        {% if not forloop.first %}
+        <button type="button" onclick="prevQ({{ forloop.counter0 }})" class="btn-soft">← Back</button>
+        {% else %}<div></div>{% endif %}
+        {% if forloop.last %}
+        <button type="submit" class="btn-primary-custom">🎉 See Results</button>
+        {% else %}
+        <button type="button" onclick="nextQ({{ forloop.counter0 }})" class="btn-primary-custom">Next →</button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </form>
+
+  <div style="text-align:center;margin-top:20px;">
+    <p style="color:var(--ink-soft);font-size:0.82rem;">Answer all questions to see how well you know each other 💕</p>
+  </div>
+</div>
+
+<script>
+let current = 0;
+const total = {{ questions|length }};
+
+function showQ(idx) {
+  document.querySelectorAll('[id^="q_"]').forEach(el => el.style.display = 'none');
+  document.getElementById(`q_${idx}`).style.display = 'block';
+  document.getElementById('progressText').textContent = `Question ${idx+1} of ${total}`;
+  const pct = ((idx+1)/total*100).toFixed(0);
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function nextQ(idx) {
+  const radios = document.querySelectorAll(`[name^="q_"]:checked`);
+  if (current < total-1) { current++; showQ(current); }
+}
+
+function prevQ(idx) {
+  if (current > 0) { current--; showQ(current); }
+}
+
+function selectOption(radio) {
+  const opts = radio.closest('.glass-card').querySelectorAll('.quiz-option');
+  opts.forEach(o => { o.style.borderColor = ''; o.style.background = ''; });
+  radio.closest('.quiz-option').style.borderColor = 'var(--rose)';
+  radio.closest('.quiz-option').style.background = 'var(--rose-pale)';
+}
+
+function resetOpt(el) {
+  const checked = el.querySelector('input[type="radio"]');
+  if (!checked || !checked.checked) {
+    el.style.borderColor = '';
+    el.style.background = '';
+  }
+}
+
+showQ(0);
+</script>
+{% endif %}
+{% endblock %}

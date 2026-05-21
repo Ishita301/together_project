@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Memories — Together{% endblock %}
+{% block nav_memories %}active{% endblock %}
+{% block page_title %}Our Memories{% endblock %}
+{% block content %}
+{% load static %}
+
+<!-- Header actions -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;" class="fade-in">
+  <div>
+    <p style="color:var(--ink-soft);font-size:0.9rem;">📸 Your shared photo album &amp; timeline</p>
+  </div>
+  <a href="{% url 'memory_create' %}" class="btn-primary-custom">+ Add Memory</a>
+</div>
+
+<!-- Category Filter -->
+<div style="display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;" class="fade-in">
+  <a href="{% url 'memory_list' %}" class="btn-soft {% if not category %}active{% endif %}" style="{% if not category %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">All ✨</a>
+  {% for val, label in categories %}
+  <a href="?category={{ val }}" class="btn-soft {% if category == val %}active{% endif %}" style="{% if category == val %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+<!-- Memory Grid -->
+{% if memories %}
+<div class="memory-grid">
+  {% for memory in memories %}
+  <div class="glass-card memory-card fade-in" onclick="window.location='{% url 'memory_detail' memory.pk %}'">
+    {% if memory.image %}
+    <img src="{{ memory.image.url }}" alt="{{ memory.title }}" loading="lazy">
+    {% else %}
+    <div style="height:220px;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:4rem;">
+      {% if memory.category == 'travel' %}✈️{% elif memory.category == 'celebration' %}🎉{% elif memory.category == 'first' %}💫{% elif memory.category == 'milestone' %}🏆{% else %}💕{% endif %}
+    </div>
+    {% endif %}
+    <div class="memory-info">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+        <h3 style="font-size:1rem;font-weight:600;color:var(--ink);line-height:1.3;">{{ memory.title }}</h3>
+        <button onclick="event.stopPropagation();toggleFavorite({{ memory.pk }}, this)" style="background:none;border:none;cursor:pointer;font-size:1.1rem;" title="Favorite">
+          {{ memory.is_favorite|yesno:"❤️,🤍" }}
+        </button>
+      </div>
+      <div style="font-size:0.78rem;color:var(--ink-soft);margin-bottom:6px;">📅 {{ memory.memory_date|date:"M j, Y" }}</div>
+      {% if memory.caption %}
+      <p style="font-size:0.82rem;color:var(--ink-soft);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ memory.caption }}</p>
+      {% endif %}
+      <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:0.7rem;background:var(--rose-pale);color:var(--rose);padding:3px 10px;border-radius:20px;font-weight:600;">{{ memory.get_category_display }}</span>
+        <span style="font-size:0.78rem;color:var(--ink-soft);">by {{ memory.created_by.first_name|default:memory.created_by.username }}</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div style="text-align:center;padding:80px 24px;" class="fade-in">
+  <div style="font-size:5rem;margin-bottom:20px;">📸</div>
+  <h2 style="font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:12px;">No memories yet</h2>
+  <p style="color:var(--ink-soft);margin-bottom:28px;">Start capturing your beautiful moments together!</p>
+  <a href="{% url 'memory_create' %}" class="btn-primary-custom">📸 Add First Memory</a>
+</div>
+{% endif %}
+
+<script>
+async function toggleFavorite(pk, btn) {
+  const res = await fetch(`/memories/${pk}/favorite/`);
+  const data = await res.json();
+  btn.textContent = data.is_favorite ? '❤️' : '🤍';
+}
+</script>
+{% endblock %}

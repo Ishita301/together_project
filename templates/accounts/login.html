@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block fullpage %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Log In — Together</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/together.css' %}">
+</head>
+<body>
+<div class="auth-container" style="background:var(--gradient);">
+  <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;" id="hearts"></div>
+  <div class="glass-card auth-card fade-in" style="position:relative;z-index:1;background:rgba(255,255,255,0.95);">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="font-family:'DM Serif Display',serif;font-size:2.5rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Together</div>
+      <p style="font-family:'Caveat',cursive;color:var(--rose);font-size:1.1rem;">welcome back 💕</p>
+    </div>
+
+    {% if messages %}{% for message in messages %}
+    <div class="alert-together {% if message.tags == 'error' %}alert-error-custom{% else %}alert-info-custom{% endif %}">{{ message }}</div>
+    {% endfor %}{% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <label class="form-label-custom">Username</label>
+      <input type="text" name="username" class="form-control-custom" placeholder="@username" required autofocus>
+      <label class="form-label-custom">Password</label>
+      <input type="password" name="password" class="form-control-custom" placeholder="••••••••" required>
+
+      <button type="submit" class="btn-primary-custom" style="width:100%;justify-content:center;padding:14px;margin-top:8px;">
+        💕 Sign In
+      </button>
+    </form>
+
+    <p style="text-align:center;margin-top:20px;color:var(--ink-soft);font-size:0.875rem;">
+      New here? <a href="{% url 'signup' %}" style="color:var(--rose);font-weight:600;text-decoration:none;">Create Account</a>
+    </p>
+    <p style="text-align:center;margin-top:8px;">
+      <a href="/" style="color:var(--ink-soft);font-size:0.82rem;text-decoration:none;">← Back to Home</a>
+    </p>
+  </div>
+</div>
+<script>
+const c = document.getElementById('hearts');
+['💕','💖','🌸','✨','💗'].forEach((e,i) => {
+  const d = document.createElement('div');
+  d.textContent = e;
+  d.style.cssText = `position:absolute;left:${10+i*18}%;bottom:-50px;font-size:1.5rem;opacity:0.4;animation:floatUp ${4+i}s ease-in infinite;animation-delay:${i*0.8}s;`;
+  c.appendChild(d);
+});
+</script>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}{{ memory.title }} — Together{% endblock %}
+{% block page_title %}Memory{% endblock %}
+{% block content %}
+{% load static %}
+
+<div style="max-width:700px;margin:0 auto;" class="fade-in">
+  <a href="{% url 'memory_list' %}" style="display:inline-flex;align-items:center;gap:6px;color:var(--ink-soft);text-decoration:none;margin-bottom:20px;font-size:0.875rem;">← Back to Memories</a>
+
+  <div class="glass-card" style="overflow:hidden;">
+    {% if memory.image %}
+    <img src="{{ memory.image.url }}" alt="{{ memory.title }}" style="width:100%;max-height:420px;object-fit:cover;">
+    {% else %}
+    <div style="height:280px;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:6rem;">
+      {% if memory.category == 'travel' %}✈️{% elif memory.category == 'celebration' %}🎉{% elif memory.category == 'first' %}💫{% else %}💕{% endif %}
+    </div>
+    {% endif %}
+
+    <div style="padding:32px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+        <div>
+          <h1 style="font-family:'DM Serif Display',serif;font-size:2rem;color:var(--ink);margin-bottom:6px;">{{ memory.title }}</h1>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span style="font-size:0.82rem;color:var(--ink-soft);">📅 {{ memory.memory_date|date:"F j, Y" }}</span>
+            <span style="background:var(--rose-pale);color:var(--rose);font-size:0.75rem;padding:3px 12px;border-radius:20px;font-weight:600;">{{ memory.get_category_display }}</span>
+            <span style="font-size:0.82rem;color:var(--ink-soft);">by {{ memory.created_by.first_name|default:memory.created_by.username }}</span>
+          </div>
+        </div>
+        <span style="font-size:1.8rem;">{{ memory.is_favorite|yesno:"❤️,🤍" }}</span>
+      </div>
+
+      {% if memory.caption %}
+      <p style="font-size:1rem;line-height:1.8;color:var(--ink);margin-bottom:20px;font-style:italic;">"{{ memory.caption }}"</p>
+      {% endif %}
+
+      {% if memory.tags %}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;">
+        {% for tag in memory.tags.split %}
+        <span style="background:var(--mauve-light);color:var(--mauve);font-size:0.75rem;padding:3px 12px;border-radius:20px;font-weight:500;">#{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if memory.created_by == request.user %}
+      <div style="display:flex;gap:12px;">
+        <form method="post" action="{% url 'memory_delete' memory.pk %}" onsubmit="return confirm('Delete this memory?')">
+          {% csrf_token %}
+          <button type="submit" style="background:#FEE2E2;color:#DC2626;border:1px solid #FCA5A5;padding:10px 20px;border-radius:50px;cursor:pointer;font-size:0.82rem;font-weight:600;">🗑️ Delete</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

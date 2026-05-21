@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Notifications — Together{% endblock %}
+{% block nav_notif %}active{% endblock %}
+{% block page_title %}Notifications 🔔{% endblock %}
+{% block content %}
+{% load static %}
+
+<div style="max-width:600px;margin:0 auto;" class="fade-in">
+  {% if notifications %}
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    {% for notif in notifications %}
+    <div class="glass-card" style="padding:20px;display:flex;align-items:flex-start;gap:16px;{% if not notif.is_read %}border-left:3px solid var(--rose);{% endif %}">
+      <div style="font-size:1.8rem;flex-shrink:0;">
+        {% if notif.notif_type == 'couple' %}💑
+        {% elif notif.notif_type == 'mood' %}😊
+        {% elif notif.notif_type == 'open_when' %}💌
+        {% elif notif.notif_type == 'memory' %}📸
+        {% else %}🔔{% endif %}
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:600;color:var(--ink);margin-bottom:2px;">{{ notif.title }}</div>
+        <div style="color:var(--ink-soft);font-size:0.875rem;margin-bottom:6px;">{{ notif.message }}</div>
+        <div style="font-size:0.75rem;color:var(--ink-soft);">{{ notif.created_at|timesince }} ago</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass-card" style="padding:60px;text-align:center;">
+    <div style="font-size:4rem;margin-bottom:16px;">🔔</div>
+    <h2 style="font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:8px;">All caught up!</h2>
+    <p style="color:var(--ink-soft);">No new notifications. We'll let you know when something happens!</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

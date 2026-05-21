@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Write Open When Message — Together{% endblock %}
+{% block page_title %}Write a Message 💌{% endblock %}
+{% block content %}
+{% load static %}
+
+<div style="max-width:560px;margin:0 auto;" class="fade-in">
+  <div class="glass-card" style="padding:40px;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:3.5rem;margin-bottom:12px;">💌</div>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:8px;">Open When Message</h2>
+      <p style="color:var(--ink-soft);font-size:0.875rem;">Write a heartfelt message for your partner to open at the right moment</p>
+    </div>
+
+    {% if messages %}{% for m in messages %}<div class="alert-together alert-success-custom">{{ m }}</div>{% endfor %}{% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <label class="form-label-custom">Open when...</label>
+      <select name="occasion" class="form-control-custom" required>
+        <option value="">Choose a moment...</option>
+        <option value="you are feeling sad">you are feeling sad 😢</option>
+        <option value="you are angry at me">you are angry at me 😤</option>
+        <option value="you are missing me">you are missing me 💭</option>
+        <option value="you are feeling happy">you are feeling happy 😊</option>
+        <option value="you are stressed">you are stressed 😰</option>
+        <option value="it is your birthday">it is your birthday 🎂</option>
+        <option value="you feel lonely">you feel lonely 🌙</option>
+        <option value="you need motivation">you need motivation 💪</option>
+        <option value="you can't sleep">you can't sleep 🌃</option>
+        <option value="you miss my voice">you miss my voice 💬</option>
+      </select>
+
+      <label class="form-label-custom">Your Message</label>
+      <textarea name="content" class="form-control-custom" rows="6" placeholder="Write something from the heart... Tell them how much they mean to you, remind them of a memory, or just say everything you'd say if you were there. 💕" required></textarea>
+
+      <div style="background:var(--rose-pale);padding:14px;border-radius:var(--radius-sm);margin-bottom:16px;font-size:0.82rem;color:var(--rose);">
+        💕 This message will be locked until your partner chooses to open it.
+      </div>
+
+      <button type="submit" class="btn-primary-custom" style="width:100%;justify-content:center;padding:14px;">
+        💌 Seal &amp; Send
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

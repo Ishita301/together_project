@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block fullpage %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign Up — Together</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/together.css' %}">
+</head>
+<body>
+<div class="auth-container">
+  <div class="glass-card auth-card fade-in">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="font-family:'DM Serif Display',serif;font-size:2.5rem;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Together</div>
+      <p style="font-family:'Caveat',cursive;color:var(--rose);font-size:1.1rem;">start your story 💕</p>
+    </div>
+
+    {% if messages %}{% for message in messages %}
+    <div class="alert-together {% if message.tags == 'error' %}alert-error-custom{% else %}alert-success-custom{% endif %}">{{ message }}</div>
+    {% endfor %}{% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px;">
+        <div>
+          <label class="form-label-custom">First Name</label>
+          <input type="text" name="first_name" class="form-control-custom" placeholder="Your name" required>
+        </div>
+        <div>
+          <label class="form-label-custom">Last Name</label>
+          <input type="text" name="last_name" class="form-control-custom" placeholder="Optional">
+        </div>
+      </div>
+      <label class="form-label-custom">Username</label>
+      <input type="text" name="username" class="form-control-custom" placeholder="@username" required>
+      <label class="form-label-custom">Email</label>
+      <input type="email" name="email" class="form-control-custom" placeholder="you@email.com" required>
+      <label class="form-label-custom">Password</label>
+      <input type="password" name="password1" class="form-control-custom" placeholder="••••••••" required>
+      <label class="form-label-custom">Confirm Password</label>
+      <input type="password" name="password2" class="form-control-custom" placeholder="••••••••" required>
+
+      {% if form.errors %}
+      <div class="alert-together alert-error-custom">
+        ❌ {% for field in form %}{% for error in field.errors %}{{ error }} {% endfor %}{% endfor %}
+        {% for error in form.non_field_errors %}{{ error }} {% endfor %}
+      </div>
+      {% endif %}
+
+      <button type="submit" class="btn-primary-custom" style="width:100%;justify-content:center;margin-top:8px;padding:14px;">
+        💕 Create Account
+      </button>
+    </form>
+
+    <p style="text-align:center;margin-top:20px;color:var(--ink-soft);font-size:0.875rem;">
+      Already have an account? <a href="{% url 'login' %}" style="color:var(--rose);font-weight:600;text-decoration:none;">Sign In</a>
+    </p>
+  </div>
+</div>
+</body>
+</html>
+{% endblock %}

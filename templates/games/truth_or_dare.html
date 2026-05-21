@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Truth or Dare — Together{% endblock %}
+{% block nav_tod %}active{% endblock %}
+{% block page_title %}Truth or Dare 🎲{% endblock %}
+{% block content %}
+{% load static %}
+
+<div style="max-width:600px;margin:0 auto;" class="fade-in">
+
+  <!-- Type Toggle -->
+  <div style="display:flex;gap:12px;margin-bottom:24px;justify-content:center;">
+    <a href="?type=truth&category={{ category }}" class="{% if tod_type == 'truth' %}btn-primary-custom{% else %}btn-soft{% endif %}">💬 Truth</a>
+    <a href="?type=dare&category={{ category }}" class="{% if tod_type == 'dare' %}btn-primary-custom{% else %}btn-soft{% endif %}">🔥 Dare</a>
+  </div>
+
+  <!-- Category Pills -->
+  <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:28px;">
+    {% for val, label in categories %}
+    <a href="?type={{ tod_type }}&category={{ val }}" class="btn-soft" style="{% if category == val %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}font-size:0.82rem;padding:8px 16px;">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  <!-- Card -->
+  {% if item %}
+  <div class="glass-card" style="padding:48px;text-align:center;min-height:280px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;" id="card">
+    <div style="position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:var(--gradient);opacity:0.07;border-radius:50%;"></div>
+    <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:16px;color:{% if tod_type == 'truth' %}var(--teal){% else %}var(--rose){% endif %};">
+      {% if tod_type == 'truth' %}💬 Truth{% else %}🔥 Dare{% endif %} — {{ category|title }}
+    </div>
+    <p style="font-family:'DM Serif Display',serif;font-size:1.6rem;line-height:1.5;color:var(--ink);">{{ item.content }}</p>
+  </div>
+  {% else %}
+  <div class="glass-card" style="padding:60px;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:12px;">😅</div>
+    <p style="color:var(--ink-soft);">No prompts in this category yet. Try another!</p>
+  </div>
+  {% endif %}
+
+  <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;">
+    <a href="?type={{ tod_type }}&category={{ category }}" class="btn-primary-custom">🔀 New {{ tod_type|title }}</a>
+    <a href="?type={% if tod_type == 'truth' %}dare{% else %}truth{% endif %}&category={{ category }}" class="btn-soft">Switch to {% if tod_type == 'truth' %}Dare 🔥{% else %}Truth 💬{% endif %}</a>
+  </div>
+</div>
+
+<script>
+// Re-add categories context
+</script>
+{% endblock %}

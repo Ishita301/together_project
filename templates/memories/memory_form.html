@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — Together{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+{% load static %}
+
+<div style="max-width:600px;margin:0 auto;" class="fade-in">
+  <div class="glass-card" style="padding:40px;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:3rem;margin-bottom:8px;">📸</div>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:1.6rem;">Capture a Memory</h2>
+      <p style="color:var(--ink-soft);font-size:0.875rem;margin-top:4px;">Save a beautiful moment from your journey together</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Image Upload -->
+      <div id="imageUploadArea" style="border:2px dashed var(--rose-light);border-radius:var(--radius);padding:32px;text-align:center;margin-bottom:20px;cursor:pointer;transition:all 0.2s;background:var(--rose-pale);" onclick="document.getElementById('id_image').click()">
+        <div id="imagePreview" style="display:none;"><img id="previewImg" style="max-height:200px;border-radius:12px;"></div>
+        <div id="uploadPlaceholder">
+          <div style="font-size:2.5rem;margin-bottom:8px;">🌄</div>
+          <p style="color:var(--rose);font-weight:600;margin-bottom:4px;">Click to upload photo</p>
+          <p style="color:var(--ink-soft);font-size:0.82rem;">PNG, JPG up to 10MB</p>
+        </div>
+      </div>
+      <input type="file" name="image" id="id_image" accept="image/*" style="display:none;" onchange="previewImage(this)">
+
+      <label class="form-label-custom">Memory Title</label>
+      <input type="text" name="title" class="form-control-custom" placeholder="Our first trip together..." required>
+
+      <label class="form-label-custom">Caption</label>
+      <textarea name="caption" class="form-control-custom" rows="3" placeholder="What made this moment special?"></textarea>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <label class="form-label-custom">Date</label>
+          <input type="date" name="memory_date" class="form-control-custom" required>
+        </div>
+        <div>
+          <label class="form-label-custom">Category</label>
+          <select name="category" class="form-control-custom">
+            <option value="other">Other ✨</option>
+            <option value="first">First Times 💫</option>
+            <option value="travel">Travel ✈️</option>
+            <option value="celebration">Celebration 🎉</option>
+            <option value="everyday">Everyday 🌸</option>
+            <option value="milestone">Milestone 🏆</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="form-label-custom">Tags (optional)</label>
+      <input type="text" name="tags" class="form-control-custom" placeholder="love, adventure, first date...">
+
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button type="submit" class="btn-primary-custom" style="flex:1;justify-content:center;padding:14px;">
+          💾 Save Memory
+        </button>
+        <a href="{% url 'memory_list' %}" class="btn-soft" style="padding:14px 20px;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function previewImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('imagePreview').style.display = 'block';
+      document.getElementById('uploadPlaceholder').style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

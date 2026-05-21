@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Together 💕{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+{% load static %}
+
+{% if not user.is_coupled %}
+<!-- Not Connected Banner -->
+<div style="background: linear-gradient(135deg, #FFF0F3, #F5F0FF); border: 1.5px dashed var(--rose-light); border-radius: var(--radius); padding: 32px; text-align: center; margin-bottom: 32px;" class="fade-in">
+  <div style="font-size:3rem;margin-bottom:12px;">💕</div>
+  <h2 style="font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:8px;">Connect with Your Partner</h2>
+  <p style="color:var(--ink-soft);margin-bottom:24px;">Share your invite code or enter theirs to begin your journey together.</p>
+  <a href="{% url 'connect_partner' %}" class="btn-primary-custom">🔗 Connect Partner</a>
+</div>
+{% endif %}
+
+<!-- Welcome Message -->
+<div style="margin-bottom:28px;" class="fade-in">
+  <p class="handwriting">Good {% now "H" as hour %}{% if hour < 12 %}morning{% elif hour < 17 %}afternoon{% else %}evening{% endif %},</p>
+  <h2 style="font-family:'DM Serif Display',serif;font-size:2.2rem;color:var(--ink);">{{ user.first_name|default:user.username }} 💫</h2>
+  {% if user.is_coupled %}
+  <p style="color:var(--ink-soft);margin-top:4px;">You and <strong>{{ user.partner.first_name|default:user.partner.username }}</strong> are writing a beautiful story. ❤️</p>
+  {% endif %}
+</div>
+
+<!-- Stats Row -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:28px;">
+  <div class="glass-card stat-card fade-in">
+    <div class="stat-emoji">📅</div>
+    <div class="stat-number">{{ days_together|default:"0" }}</div>
+    <div class="stat-label">Days Together</div>
+  </div>
+  <div class="glass-card stat-card fade-in stagger-1">
+    <div class="stat-emoji">💍</div>
+    <div class="stat-number">{{ anniversary_countdown|default:"—" }}</div>
+    <div class="stat-label">Days to Anniversary</div>
+  </div>
+  <div class="glass-card stat-card fade-in stagger-2">
+    <div class="stat-emoji">✈️</div>
+    <div class="stat-number">{{ next_meeting_countdown|default:"—" }}</div>
+    <div class="stat-label">Days to Next Meet</div>
+  </div>
+  <div class="glass-card stat-card fade-in stagger-3">
+    <div class="stat-emoji">🔥</div>
+    <div class="stat-number">{{ user.streak_count }}</div>
+    <div class="stat-label">Day Streak</div>
+  </div>
+</div>
+
+<!-- Main Grid -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;" class="fade-in">
+
+  <!-- Partner Card -->
+  {% if user.is_coupled %}
+  <div class="glass-card" style="padding:28px;grid-column:span 1;">
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:20px;">💑 Your Partner</h3>
+    <div style="display:flex;align-items:center;gap:20px;">
+      <img src="{{ user.partner.get_avatar_url }}" alt="{{ user.partner.username }}" class="partner-avatar" style="width:72px;height:72px;">
+      <div>
+        <div style="font-size:1.2rem;font-weight:600;color:var(--ink);">{{ user.partner.first_name|default:user.partner.username }}</div>
+        <div style="color:var(--ink-soft);font-size:0.85rem;margin-top:2px;">@{{ user.partner.username }}</div>
+        <div class="partner-mood" style="margin-top:8px;">
+          {% if user.partner.current_mood == 'happy' %}😊 Happy
+          {% elif user.partner.current_mood == 'missing' %}💭 Missing You
+          {% elif user.partner.current_mood == 'busy' %}💼 Busy
+          {% elif user.partner.current_mood == 'tired' %}😴 Tired
+          {% elif user.partner.current_mood == 'sad' %}😢 Sad
+          {% elif user.partner.current_mood == 'excited' %}🎉 Excited
+          {% elif user.partner.current_mood == 'love' %}❤️ Feeling Loved
+          {% else %}✨ Online{% endif %}
+        </div>
+        {% if user.partner.mood_message %}
+        <div style="margin-top:8px;font-style:italic;font-family:'Caveat',cursive;color:var(--rose);font-size:1rem;">"{{ user.partner.mood_message }}"</div>
+        {% endif %}
+        <div style="margin-top:16px;">
+          <a href="{% url 'chat' %}" class="btn-primary-custom" style="font-size:0.82rem;padding:8px 18px;">💬 Chat Now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="glass-card" style="padding:28px;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:12px;">💝</div>
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:8px;">No Partner Yet</h3>
+    <p style="color:var(--ink-soft);font-size:0.875rem;margin-bottom:16px;">Connect with your partner to unlock all features.</p>
+    <a href="{% url 'connect_partner' %}" class="btn-primary-custom" style="font-size:0.85rem;">🔗 Connect</a>
+  </div>
+  {% endif %}
+
+  <!-- Your Mood -->
+  <div class="glass-card" style="padding:28px;">
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:16px;">😊 Your Mood</h3>
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:3.5rem;">
+        {% if user.current_mood == 'happy' %}😊{% elif user.current_mood == 'missing' %}💭{% elif user.current_mood == 'busy' %}💼{% elif user.current_mood == 'tired' %}😴{% elif user.current_mood == 'sad' %}😢{% elif user.current_mood == 'excited' %}🎉{% elif user.current_mood == 'love' %}❤️{% elif user.current_mood == 'anxious' %}😰{% else %}✨{% endif %}
+      </div>
+      <div style="font-size:1.1rem;font-weight:600;color:var(--ink);margin-top:4px;">{{ user.current_mood|title|default:"Happy" }}</div>
+      {% if user.mood_message %}<div style="font-style:italic;color:var(--ink-soft);font-size:0.875rem;margin-top:4px;">"{{ user.mood_message }}"</div>{% endif %}
+    </div>
+    <form method="post" action="{% url 'update_mood' %}">
+      {% csrf_token %}
+      <div class="mood-grid" style="margin-bottom:12px;">
+        <button type="submit" name="mood" value="happy" class="mood-btn {% if user.current_mood == 'happy' %}active{% endif %}"><span class="mood-emoji">😊</span>Happy</button>
+        <button type="submit" name="mood" value="missing" class="mood-btn {% if user.current_mood == 'missing' %}active{% endif %}"><span class="mood-emoji">💭</span>Missing</button>
+        <button type="submit" name="mood" value="busy" class="mood-btn {% if user.current_mood == 'busy' %}active{% endif %}"><span class="mood-emoji">💼</span>Busy</button>
+        <button type="submit" name="mood" value="tired" class="mood-btn {% if user.current_mood == 'tired' %}active{% endif %}"><span class="mood-emoji">😴</span>Tired</button>
+        <button type="submit" name="mood" value="sad" class="mood-btn {% if user.current_mood == 'sad' %}active{% endif %}"><span class="mood-emoji">😢</span>Sad</button>
+        <button type="submit" name="mood" value="excited" class="mood-btn {% if user.current_mood == 'excited' %}active{% endif %}"><span class="mood-emoji">🎉</span>Excited</button>
+        <button type="submit" name="mood" value="love" class="mood-btn {% if user.current_mood == 'love' %}active{% endif %}"><span class="mood-emoji">❤️</span>Loved</button>
+        <button type="submit" name="mood" value="anxious" class="mood-btn {% if user.current_mood == 'anxious' %}active{% endif %}"><span class="mood-emoji">😰</span>Anxious</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="glass-card" style="padding:28px;">
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:20px;">⚡ Quick Actions</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <a href="{% url 'memory_create' %}" class="btn-soft" style="justify-content:center;flex-direction:column;text-align:center;padding:16px;gap:4px;">
+        <span style="font-size:1.5rem;">📸</span>
+        <span>Add Memory</span>
+      </a>
+      <a href="{% url 'open_when_create' %}" class="btn-soft" style="justify-content:center;flex-direction:column;text-align:center;padding:16px;gap:4px;">
+        <span style="font-size:1.5rem;">💌</span>
+        <span>Write Message</span>
+      </a>
+      <a href="{% url 'this_or_that' %}" class="btn-soft" style="justify-content:center;flex-direction:column;text-align:center;padding:16px;gap:4px;">
+        <span style="font-size:1.5rem;">🎯</span>
+        <span>Play a Game</span>
+      </a>
+      <a href="{% url 'date_ideas' %}" class="btn-soft" style="justify-content:center;flex-direction:column;text-align:center;padding:16px;gap:4px;">
+        <span style="font-size:1.5rem;">💑</span>
+        <span>Date Idea</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Your Invite Code -->
+  <div class="glass-card" style="padding:28px;text-align:center;">
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:8px;">🔗 Your Invite Code</h3>
+    <p style="color:var(--ink-soft);font-size:0.85rem;margin-bottom:16px;">Share this with your partner to connect</p>
+    <div id="inviteCode" style="font-family:monospace;background:var(--mist);padding:14px 20px;border-radius:12px;font-size:0.85rem;color:var(--ink);border:1.5px dashed var(--rose-light);cursor:pointer;user-select:all;word-break:break-all;" onclick="copyCode(this)">
+      {{ user.invite_code }}
+    </div>
+    <button onclick="copyCode(document.getElementById('inviteCode'))" class="btn-soft" style="margin-top:12px;font-size:0.82rem;">📋 Copy Code</button>
+  </div>
+
+</div>
+
+<script>
+function copyCode(el) {
+  navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+    const orig = el.textContent;
+    el.textContent = '✅ Copied!';
+    setTimeout(() => { el.textContent = orig; }, 2000);
+  });
+}
+</script>
+{% endblock %}

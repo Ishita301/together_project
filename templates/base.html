@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ request.user.theme_preference|default:'light' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Together 💕{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/together.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+<!-- Sidebar overlay for mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">Together 💕</div>
+    <div class="tagline">your private space</div>
+  </div>
+
+  {% if user.is_coupled %}
+  <div style="padding: 12px 24px; border-bottom: 1px solid var(--card-border); margin-bottom: 8px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img src="{{ user.partner.get_avatar_url }}" alt="partner" class="partner-avatar" style="width:40px;height:40px;">
+      <div>
+        <div style="font-size:0.82rem;font-weight:600;color:var(--ink);">{{ user.partner.first_name|default:user.partner.username }}</div>
+        <div class="partner-mood" style="font-size:0.7rem;padding:2px 8px;">
+          {% if user.partner.current_mood == 'happy' %}😊
+          {% elif user.partner.current_mood == 'missing' %}💭
+          {% elif user.partner.current_mood == 'busy' %}💼
+          {% elif user.partner.current_mood == 'tired' %}😴
+          {% elif user.partner.current_mood == 'sad' %}😢
+          {% elif user.partner.current_mood == 'excited' %}🎉
+          {% elif user.partner.current_mood == 'love' %}❤️
+          {% else %}✨{% endif %}
+          {{ user.partner.current_mood|default:"online" }}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-title">Home</div>
+    <a href="{% url 'dashboard' %}" class="nav-link {% block nav_dashboard %}{% endblock %}">
+      <span class="icon">🏠</span> Dashboard
+    </a>
+    <a href="{% url 'profile' %}" class="nav-link {% block nav_profile %}{% endblock %}">
+      <span class="icon">👤</span> Profile
+    </a>
+
+    <div class="nav-section-title">Connect</div>
+    <a href="{% url 'chat' %}" class="nav-link {% block nav_chat %}{% endblock %}">
+      <span class="icon">💬</span> Chat
+    </a>
+    <a href="{% url 'memory_list' %}" class="nav-link {% block nav_memories %}{% endblock %}">
+      <span class="icon">📸</span> Memories
+    </a>
+    <a href="{% url 'open_when_list' %}" class="nav-link {% block nav_openwhen %}{% endblock %}">
+      <span class="icon">💌</span> Open When
+    </a>
+
+    <div class="nav-section-title">Play Together</div>
+    <a href="{% url 'this_or_that' %}" class="nav-link {% block nav_tot %}{% endblock %}">
+      <span class="icon">🎯</span> This or That
+    </a>
+    <a href="{% url 'truth_or_dare' %}" class="nav-link {% block nav_tod %}{% endblock %}">
+      <span class="icon">🎲</span> Truth or Dare
+    </a>
+    <a href="{% url 'quiz' %}" class="nav-link {% block nav_quiz %}{% endblock %}">
+      <span class="icon">🧠</span> Couple Quiz
+    </a>
+    <a href="{% url 'bucket_list' %}" class="nav-link {% block nav_bucket %}{% endblock %}">
+      <span class="icon">🌟</span> Bucket List
+    </a>
+    <a href="{% url 'date_ideas' %}" class="nav-link {% block nav_date %}{% endblock %}">
+      <span class="icon">💑</span> Date Ideas
+    </a>
+
+    <div class="nav-section-title">Account</div>
+    <a href="{% url 'notifications' %}" class="nav-link {% block nav_notif %}{% endblock %}">
+      <span class="icon">🔔</span> Notifications
+      {% with count=unread_count %}{% if count %}<span class="badge">{{ count }}</span>{% endif %}{% endwith %}
+    </a>
+    <a href="{% url 'logout' %}" class="nav-link">
+      <span class="icon">🚪</span> Log Out
+    </a>
+  </nav>
+</aside>
+
+<!-- Main -->
+<div class="main-content">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button class="menu-toggle" id="menuToggle">☰</button>
+      <h1 class="topbar-title">{% block page_title %}{% endblock %}</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <!-- Theme Toggle -->
+      <button onclick="toggleTheme()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;" title="Toggle theme">
+        <span id="themeIcon">{% if request.user.theme_preference == 'dark' %}☀️{% else %}🌙{% endif %}</span>
+      </button>
+      <!-- Mood Quick Set -->
+      <div style="position:relative;">
+        <button onclick="document.getElementById('moodPicker').classList.toggle('show')" style="background:var(--rose-pale);border:none;padding:8px 16px;border-radius:50px;cursor:pointer;font-size:0.82rem;color:var(--rose);font-weight:600;">
+          {% if request.user.current_mood == 'happy' %}😊
+          {% elif request.user.current_mood == 'missing' %}💭
+          {% elif request.user.current_mood == 'busy' %}💼
+          {% elif request.user.current_mood == 'sad' %}😢
+          {% elif request.user.current_mood == 'excited' %}🎉
+          {% else %}✨{% endif %}
+          My Mood
+        </button>
+        <div id="moodPicker" style="display:none;position:absolute;right:0;top:110%;background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;min-width:260px;box-shadow:var(--shadow);z-index:100;">
+          <style>#moodPicker.show{display:block!important;}</style>
+          <form method="post" action="{% url 'update_mood' %}">{% csrf_token %}
+            <div class="mood-grid" style="grid-template-columns:repeat(4,1fr);gap:8px;">
+              {% for mood, label in moods %}
+              <button type="submit" name="mood" value="{{ mood }}" class="mood-btn {% if request.user.current_mood == mood %}active{% endif %}">
+                <span class="mood-emoji">
+                  {% if mood == 'happy' %}😊{% elif mood == 'missing' %}💭{% elif mood == 'busy' %}💼{% elif mood == 'tired' %}😴{% elif mood == 'sad' %}😢{% elif mood == 'excited' %}🎉{% elif mood == 'love' %}❤️{% elif mood == 'anxious' %}😰{% endif %}
+                </span>
+                {{ mood|title }}
+              </button>
+              {% empty %}
+              <button type="submit" name="mood" value="happy" class="mood-btn">😊</button>
+              <button type="submit" name="mood" value="missing" class="mood-btn">💭</button>
+              <button type="submit" name="mood" value="sad" class="mood-btn">😢</button>
+              <button type="submit" name="mood" value="excited" class="mood-btn">🎉</button>
+              {% endfor %}
+            </div>
+          </form>
+        </div>
+      </div>
+      <img src="{{ request.user.get_avatar_url }}" alt="me" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--rose-light);">
+    </div>
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+  <div style="padding: 16px 32px 0;">
+    {% for message in messages %}
+    <div class="alert-together {% if message.tags == 'success' %}alert-success-custom{% elif message.tags == 'error' %}alert-error-custom{% else %}alert-info-custom{% endif %}">
+      {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% else %}ℹ️{% endif %}
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="content-area">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+{% else %}
+{% block fullpage %}{% endblock %}
+{% endif %}
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  document.getElementById('themeIcon').textContent = next === 'dark' ? '☀️' : '🌙';
+  fetch('/profile/', {method:'POST', headers:{'X-CSRFToken':getCookie('csrftoken'),'Content-Type':'application/x-www-form-urlencoded'}, body:'theme_preference='+next});
+}
+
+const menuToggle = document.getElementById('menuToggle');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+if (menuToggle) {
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+  });
+}
+if (overlay) {
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  });
+}
+
+document.addEventListener('click', (e) => {
+  const picker = document.getElementById('moodPicker');
+  if (picker && !picker.contains(e.target) && !e.target.closest('[onclick]')) {
+    picker.classList.remove('show');
+  }
+});
+
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : null;
+}
+</script>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

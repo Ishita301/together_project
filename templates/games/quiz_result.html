@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Quiz Result — Together{% endblock %}
+{% block page_title %}Quiz Results 🎉{% endblock %}
+{% block content %}
+<div style="max-width:500px;margin:0 auto;text-align:center;" class="fade-in">
+  <div class="glass-card" style="padding:48px;">
+    <div style="font-size:4rem;margin-bottom:20px;">
+      {% if pct >= 80 %}🏆{% elif pct >= 60 %}🥈{% elif pct >= 40 %}🎯{% else %}💕{% endif %}
+    </div>
+    <h2 style="font-family:'DM Serif Display',serif;font-size:2rem;margin-bottom:8px;">
+      {% if pct >= 80 %}You know them SO well!
+      {% elif pct >= 60 %}Pretty good!
+      {% elif pct >= 40 %}Getting there!
+      {% else %}Time to learn more! 💕{% endif %}
+    </h2>
+    <div style="margin:24px auto;width:140px;height:140px;border-radius:50%;background:var(--gradient);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,107,138,0.3);">
+      <div style="font-family:'DM Serif Display',serif;font-size:2.5rem;color:white;">{{ score }}</div>
+      <div style="color:rgba(255,255,255,0.8);font-size:0.82rem;">out of {{ total }}</div>
+    </div>
+    <div class="match-bar" style="max-width:300px;margin:0 auto 16px;"><div class="match-fill" style="width:{{ pct }}%;"></div></div>
+    <p style="font-size:1.1rem;color:var(--ink-soft);margin-bottom:28px;line-height:1.6;">{{ pct }}% correct — {% if pct >= 80 %}amazing bond! 💕{% elif pct >= 60 %}great connection!{% else %}more to discover together!{% endif %}</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="{% url 'quiz' %}" class="btn-primary-custom">🔁 Try Again</a>
+      <a href="{% url 'dashboard' %}" class="btn-soft">🏠 Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

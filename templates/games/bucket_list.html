@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Bucket List — Together{% endblock %}
+{% block nav_bucket %}active{% endblock %}
+{% block page_title %}Our Bucket List 🌟{% endblock %}
+{% block content %}
+{% load static %}
+
+<div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;" class="fade-in">
+
+  <!-- Items List -->
+  <div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div>
+        {% with total=items.count done=items.filter.count %}
+        <p style="color:var(--ink-soft);font-size:0.875rem;">{{ items.count }} dreams to chase together ✨</p>
+        {% endwith %}
+      </div>
+    </div>
+
+    {% if items %}
+    <div>
+      {% for item in items %}
+      <div class="bucket-item {% if item.is_completed %}completed{% endif %}" id="item_{{ item.pk }}">
+        <button class="bucket-check {% if item.is_completed %}done{% endif %}" onclick="toggleComplete({{ item.pk }}, this)" title="Mark complete">
+          {% if item.is_completed %}✓{% endif %}
+        </button>
+        <div style="flex:1;">
+          <div class="bucket-title" style="font-weight:600;color:var(--ink);margin-bottom:3px;">{{ item.title }}</div>
+          {% if item.description %}<div style="font-size:0.82rem;color:var(--ink-soft);margin-bottom:4px;">{{ item.description }}</div>{% endif %}
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="background:var(--rose-pale);color:var(--rose);font-size:0.7rem;padding:2px 10px;border-radius:20px;font-weight:600;">{{ item.get_category_display }}</span>
+            {% if item.target_date %}<span style="font-size:0.75rem;color:var(--ink-soft);">🗓️ {{ item.target_date|date:"M j, Y" }}</span>{% endif %}
+            <span style="font-size:0.75rem;color:var(--ink-soft);">by {{ item.created_by.first_name|default:item.created_by.username }}</span>
+          </div>
+        </div>
+        {% if item.is_completed %}
+        <div style="font-size:1.4rem;">🎉</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass-card" style="padding:60px;text-align:center;">
+      <div style="font-size:4rem;margin-bottom:16px;">🌟</div>
+      <h3 style="font-family:'DM Serif Display',serif;font-size:1.4rem;margin-bottom:8px;">Dream big together</h3>
+      <p style="color:var(--ink-soft);">Add your first dream, goal, or adventure!</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Add Form -->
+  <div class="glass-card" style="padding:28px;position:sticky;top:90px;">
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:20px;">✨ Add a Dream</h3>
+    {% if messages %}{% for m in messages %}<div class="alert-together alert-success-custom">{{ m }}</div>{% endfor %}{% endif %}
+    <form method="post" action="{% url 'bucket_list_add' %}">
+      {% csrf_token %}
+      <label class="form-label-custom">Dream / Goal</label>
+      <input type="text" name="title" class="form-control-custom" placeholder="Visit Santorini together..." required>
+      <label class="form-label-custom">Description</label>
+      <textarea name="description" class="form-control-custom" rows="2" placeholder="More details..."></textarea>
+      <label class="form-label-custom">Category</label>
+      <select name="category" class="form-control-custom">
+        <option value="travel">✈️ Travel</option>
+        <option value="experience">🎡 Experience</option>
+        <option value="goal">🎯 Goal</option>
+        <option value="dream">💭 Dream</option>
+      </select>
+      <label class="form-label-custom">Target Date (optional)</label>
+      <input type="date" name="target_date" class="form-control-custom">
+      <button type="submit" class="btn-primary-custom" style="width:100%;justify-content:center;margin-top:4px;">🌟 Add Dream</button>
+    </form>
+  </div>
+</div>
+
+<script>
+async function toggleComplete(pk, btn) {
+  const res = await fetch(`/games/bucket-list/${pk}/complete/`);
+  const data = await res.json();
+  const item = document.getElementById(`item_${pk}`);
+  if (data.is_completed) {
+    btn.classList.add('done');
+    btn.innerHTML = '✓';
+    item.classList.add('completed');
+  } else {
+    btn.classList.remove('done');
+    btn.innerHTML = '';
+    item.classList.remove('completed');
+  }
+}
+</script>
+{% endblock %}

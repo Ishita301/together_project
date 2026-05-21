@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Date Ideas — Together{% endblock %}
+{% block nav_date %}active{% endblock %}
+{% block page_title %}Date Ideas 💑{% endblock %}
+{% block content %}
+{% load static %}
+
+<div class="fade-in">
+  <!-- Random Idea Spotlight -->
+  {% if random_idea %}
+  <div class="glass-card" style="padding:40px;text-align:center;margin-bottom:28px;background:var(--gradient);border:none;">
+    <div style="font-size:3rem;margin-bottom:12px;">{{ random_idea.emoji }}</div>
+    <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:8px;">✨ Random Date Idea</div>
+    <h2 style="font-family:'DM Serif Display',serif;font-size:2rem;color:white;margin-bottom:10px;">{{ random_idea.title }}</h2>
+    <p style="color:rgba(255,255,255,0.85);font-size:0.95rem;max-width:500px;margin:0 auto 20px;line-height:1.7;">{{ random_idea.description }}</p>
+    <a href="{% url 'date_ideas' %}" class="btn-white" style="padding:12px 28px;">🔀 Spin for Another</a>
+  </div>
+  {% endif %}
+
+  <!-- Filter -->
+  <div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;">
+    <a href="{% url 'date_ideas' %}" class="btn-soft {% if not category %}active{% endif %}" style="{% if not category %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">All 💕</a>
+    <a href="?category=virtual" class="btn-soft {% if category == 'virtual' %}active{% endif %}" style="{% if category == 'virtual' %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">💻 Virtual</a>
+    <a href="?category=physical" class="btn-soft {% if category == 'physical' %}active{% endif %}" style="{% if category == 'physical' %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">🌍 In-Person</a>
+    <a href="?category=creative" class="btn-soft {% if category == 'creative' %}active{% endif %}" style="{% if category == 'creative' %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">🎨 Creative</a>
+    <a href="?category=chill" class="btn-soft {% if category == 'chill' %}active{% endif %}" style="{% if category == 'chill' %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">🌙 Chill</a>
+  </div>
+
+  <!-- Ideas Grid -->
+  {% if ideas %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
+    {% for idea in ideas %}
+    <div class="glass-card" style="padding:28px;text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:12px;">{{ idea.emoji }}</div>
+      <h3 style="font-family:'DM Serif Display',serif;font-size:1.1rem;margin-bottom:8px;color:var(--ink);">{{ idea.title }}</h3>
+      <p style="color:var(--ink-soft);font-size:0.82rem;line-height:1.6;margin-bottom:14px;">{{ idea.description }}</p>
+      <span style="background:var(--rose-pale);color:var(--rose);font-size:0.7rem;padding:3px 12px;border-radius:20px;font-weight:600;text-transform:uppercase;">{{ idea.category }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:60px;">
+    <div style="font-size:4rem;margin-bottom:16px;">💑</div>
+    <p style="color:var(--ink-soft);">Date ideas coming soon! Check back later.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
