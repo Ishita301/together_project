@@ -1,4 +1,4 @@
-    from games.models import TruthOrDare, ThisOrThatQuestion
+from games.models import TruthOrDare, ThisOrThatQuestion
 from features.models import DateIdea
 
 # Truth Questions
@@ -13,9 +13,9 @@ truths = [
     ("funny", "What's the most embarrassing thing you've done for me?"),
     ("funny", "If I were a food, what would I be and why?"),
     ("deep", "What's one thing you want us to achieve together?"),
-    ("deep", "What's your biggest fear about our future ?")
+    ("deep", "What's your biggest fear about our future?")
 ]
-  
+
 for cat, content in truths:
     TruthOrDare.objects.get_or_create(
         content=content,
@@ -73,7 +73,7 @@ ideas = [
     ("Cook the Same Recipe", "Both cook the same dish and video call while eating.", "creative", "🍳"),
     ("Online Game Night", "Play online games together.", "virtual", "🎮"),
     ("Stargazing Call", "Look at the stars together on a clear night call.", "chill", "🌟"),
-    ("Sunrise Watch", "Set alarms and watch the sunrise together.", "chill", "🌅"   ),
+    ("Sunrise Watch", "Set alarms and watch the sunrise together.", "chill", "🌅"),
     ("Bake Together", "Bake cookies or a cake together.", "creative", "🍪"),
     ("Movie Marathon", "Watch an entire film series together.", "chill", "📺"),
     ("Create a Playlist", "Make a playlist for each other.", "creative", "🎵")
