@@ -13,9 +13,9 @@ truths = [
     ("funny", "What's the most embarrassing thing you've done for me?"),
     ("funny", "If I were a food, what would I be and why?"),
     ("deep", "What's one thing you want us to achieve together?"),
-    ("deep", "What's your biggest fear about our future?")
+    ("deep", "What's your biggest fear about our future ?")
 ]
-
+  
 for cat, content in truths:
     TruthOrDare.objects.get_or_create(
         content=content,
@@ -78,7 +78,7 @@ ideas = [
     ("Movie Marathon", "Watch an entire film series together.", "chill", "📺"),
     ("Create a Playlist", "Make a playlist for each other.", "creative", "🎵")
 ]
-    
+
 for title, desc, cat, emoji in ideas:
     DateIdea.objects.get_or_create(
         title=title,
