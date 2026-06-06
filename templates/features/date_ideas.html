@@ -2,47 +2,162 @@
 {% block title %}Date Ideas — Together{% endblock %}
 {% block nav_date %}active{% endblock %}
 {% block page_title %}Date Ideas 💑{% endblock %}
+
 {% block content %}
 {% load static %}
 
-<div class="fade-in">
-  <!-- Random Idea Spotlight -->
-  {% if random_idea %}
-  <div class="glass-card" style="padding:40px;text-align:center;margin-bottom:28px;background:var(--gradient);border:none;">
-    <div style="font-size:3rem;margin-bottom:12px;">{{ random_idea.emoji }}</div>
-    <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.7);font-weight:600;margin-bottom:8px;">✨ Random Date Idea</div>
-    <h2 style="font-family:'DM Serif Display',serif;font-size:2rem;color:white;margin-bottom:10px;">{{ random_idea.title }}</h2>
-    <p style="color:rgba(255,255,255,0.85);font-size:0.95rem;max-width:500px;margin:0 auto 20px;line-height:1.7;">{{ random_idea.description }}</p>
-    <a href="{% url 'date_ideas' %}" class="btn-white" style="padding:12px 28px;">🔀 Spin for Another</a>
-  </div>
-  {% endif %}
+{# ── Random Spotlight Card ── #}
+{% if random_idea %}
+<div class="card fade-up"
+     style="padding:clamp(24px,4vw,40px);margin-bottom:28px;
+            background:var(--grad);border:none;overflow:hidden;position:relative;">
 
-  <!-- Filter -->
-  <div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;">
-    <a href="{% url 'date_ideas' %}" class="btn-soft {% if not category %}active{% endif %}" style="{% if not category %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">All 💕</a>
-    <a href="?category=virtual" class="btn-soft {% if category == 'virtual' %}active{% endif %}" style="{% if category == 'virtual' %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">💻 Virtual</a>
-    <a href="?category=physical" class="btn-soft {% if category == 'physical' %}active{% endif %}" style="{% if category == 'physical' %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">🌍 In-Person</a>
-    <a href="?category=creative" class="btn-soft {% if category == 'creative' %}active{% endif %}" style="{% if category == 'creative' %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">🎨 Creative</a>
-    <a href="?category=chill" class="btn-soft {% if category == 'chill' %}active{% endif %}" style="{% if category == 'chill' %}background:var(--rose);color:white;border-color:var(--rose);{% endif %}">🌙 Chill</a>
-  </div>
+  <div style="position:absolute;top:-50px;right:-50px;width:160px;height:160px;
+              border-radius:50%;background:rgba(255,255,255,.1);pointer-events:none;"></div>
+  <div style="position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;
+              border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none;"></div>
 
-  <!-- Ideas Grid -->
-  {% if ideas %}
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;">
-    {% for idea in ideas %}
-    <div class="glass-card" style="padding:28px;text-align:center;">
-      <div style="font-size:2.5rem;margin-bottom:12px;">{{ idea.emoji }}</div>
-      <h3 style="font-family:'DM Serif Display',serif;font-size:1.1rem;margin-bottom:8px;color:var(--ink);">{{ idea.title }}</h3>
-      <p style="color:var(--ink-soft);font-size:0.82rem;line-height:1.6;margin-bottom:14px;">{{ idea.description }}</p>
-      <span style="background:var(--rose-pale);color:var(--rose);font-size:0.7rem;padding:3px 12px;border-radius:20px;font-weight:600;text-transform:uppercase;">{{ idea.category }}</span>
+  <div style="position:relative;z-index:1;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:10px;">{{ random_idea.emoji }}</div>
+    <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;
+                color:rgba(255,255,255,.75);font-weight:700;margin-bottom:8px;">
+      ✨ Surprise Date Idea
     </div>
-    {% endfor %}
+    <h2 style="font-family:'Playfair Display',serif;font-style:italic;
+               font-size:clamp(1.3rem,3vw,2rem);color:#fff;margin-bottom:10px;">
+      {{ random_idea.title }}
+    </h2>
+    <p style="color:rgba(255,255,255,.85);font-size:.9rem;
+              max-width:480px;margin:0 auto 20px;line-height:1.8;">
+      {{ random_idea.description }}
+    </p>
+
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
+      {% if random_idea.estimated_cost %}
+      <span style="background:rgba(255,255,255,.2);color:#fff;padding:4px 14px;
+                   border-radius:50px;font-size:.75rem;font-weight:600;">
+        💸 {{ random_idea.estimated_cost }}
+      </span>
+      {% endif %}
+      {% if random_idea.duration %}
+      <span style="background:rgba(255,255,255,.2);color:#fff;padding:4px 14px;
+                   border-radius:50px;font-size:.75rem;font-weight:600;">
+        ⏱ {{ random_idea.duration }}
+      </span>
+      {% endif %}
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="{% url 'date_ideas' %}?category={{ category }}"
+         class="btn-white" style="padding:10px 24px;font-size:.88rem;">
+        🎲 New Surprise
+      </a>
+      <button onclick="toggleSave({{ random_idea.id }}, this)"
+              class="btn-outline-white"
+              style="padding:10px 20px;font-size:.88rem;"
+              id="save_spot_{{ random_idea.id }}">
+        {% if random_idea.id in saved_ids %}❤️ Saved{% else %}🤍 Save Idea{% endif %}
+      </button>
+    </div>
   </div>
-  {% else %}
-  <div style="text-align:center;padding:60px;">
-    <div style="font-size:4rem;margin-bottom:16px;">💑</div>
-    <p style="color:var(--ink-soft);">Date ideas coming soon! Check back later.</p>
-  </div>
-  {% endif %}
 </div>
+{% endif %}
+
+{# ── Category Filter Pills ── #}
+<div class="pill-bar" style="margin-bottom:24px;flex-wrap:wrap;" class="fade-up">
+  <a href="{% url 'date_ideas' %}"
+     class="pill {% if not category %}active{% endif %}">All 💕</a>
+  {% for val, label in categories %}
+  <a href="?category={{ val }}"
+     class="pill {% if category == val %}active{% endif %}"
+     style="font-size:.8rem;">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{# ── Ideas Grid ── #}
+{% if ideas %}
+<div class="date-grid fade-up delay-1">
+  {% for idea in ideas %}
+  <div class="date-card card" id="idea_{{ idea.id }}">
+    <span class="date-emoji">{{ idea.emoji }}</span>
+    <h3 class="date-title">{{ idea.title }}</h3>
+    <p class="date-desc">{{ idea.description }}</p>
+
+    <div class="date-meta" style="margin-bottom:10px;">
+      <span class="badge badge-rose">{{ idea.get_category_display }}</span>
+      {% if idea.estimated_cost %}
+      <span class="badge badge-peach">💸 {{ idea.estimated_cost }}</span>
+      {% endif %}
+      {% if idea.duration %}
+      <span class="badge badge-mauve">⏱ {{ idea.duration }}</span>
+      {% endif %}
+    </div>
+
+    <button onclick="toggleSave({{ idea.id }}, this)"
+            class="save-btn"
+            id="save_{{ idea.id }}"
+            title="Save idea">
+      {% if idea.id in saved_ids %}❤️{% else %}🤍{% endif %}
+    </button>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="card" style="padding:56px 32px;text-align:center;">
+  <div style="font-size:3.5rem;margin-bottom:14px;">💑</div>
+  <h3 style="font-family:'Playfair Display',serif;font-size:1.4rem;
+             font-style:italic;margin-bottom:8px;">No ideas in this category yet</h3>
+  <a href="{% url 'date_ideas' %}" class="btn-ghost">View All Ideas</a>
+</div>
+{% endif %}
+
+<script>
+/* FIXED: toggleSave uses correct URL and updates all matching buttons */
+const savedIds = new Set([{% for id in saved_ids %}{{ id }},{% endfor %}]);
+
+/* Set initial heart state for all cards */
+document.querySelectorAll('.save-btn').forEach(btn => {
+  const id = parseInt(btn.id.replace('save_', '').replace('spot_', ''));
+  if (!isNaN(id)) {
+    btn.textContent = savedIds.has(id) ? '❤️' : '🤍';
+  }
+});
+
+async function toggleSave(pk, btn) {
+  try {
+    const res  = await fetch(`/games/date-ideas/${pk}/save/`, {
+      method:  'POST',
+      headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    });
+    const data = await res.json();
+
+    const isSaved = data.saved;
+    if (isSaved) {
+      savedIds.add(pk);
+    } else {
+      savedIds.delete(pk);
+    }
+
+    /* Update every button for this idea (card + spotlight) */
+    document.querySelectorAll(`[id$="_${pk}"]`).forEach(b => {
+      b.textContent = isSaved ? '❤️' : '🤍';
+    });
+
+    /* Update text button if it has text */
+    if (btn.textContent.includes('Save') || btn.textContent.includes('Saved')) {
+      btn.textContent = isSaved ? '❤️ Saved' : '🤍 Save Idea';
+    }
+
+  } catch (err) {
+    console.error('Save failed:', err);
+  }
+}
+
+function getCookie(name) {
+  const match = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return match ? match[2] : null;
+}
+</script>
+
 {% endblock %}
